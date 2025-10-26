@@ -1,0 +1,38 @@
+{
+  "version": 2,
+  "base_version": 1,
+  "sections": [
+    "abstract",
+    "introduction",
+    "methods",
+    "results",
+    "discussion",
+    "conclusion"
+  ],
+  "improvement_dimensions": [
+    "align_sources",
+    "sharpen_arguments",
+    "improve_style",
+    "restructure",
+    "check_consistency"
+  ],
+  "max_iterations_per_section": 1,
+  "reference_papers": [
+    "references/swish_2017.pdf",
+    "references/gelu_2016.pdf",
+    "references/mish_2019.pdf"
+  ],
+  "evaluation_criteria": {
+    "min_quality_score": 7,
+    "require_compilation": true,
+    "max_length_increase_pct": 20
+  },
+  "paths": {
+    "kb_path": "/Users/cstein/vaults/projects/science/activation_function",
+    "code_path": "/Users/cstein/code/activation_function",
+    "input_draft": "paper/main.tex",
+    "output_draft": "paper/main_v2.tex",
+    "prompts_path": "/Users/cstein/code/agent-workflows/workflows/improve_paper/prompts"
+  }
+}
+
