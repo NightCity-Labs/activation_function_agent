@@ -1,0 +1,44 @@
+%% ICML 2025 Style File (Simplified)
+%% Based on ICML standard format
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{icml2025}[2025/01/01 ICML 2025 submission/camera-ready style file]
+
+% Required packages
+\RequirePackage{amsmath,amssymb,amsthm}
+\RequirePackage{graphicx}
+\RequirePackage{hyperref}
+\RequirePackage{natbib}
+\RequirePackage{algorithm}
+\RequirePackage{algorithmic}
+
+% Page layout
+\RequirePackage[letterpaper,margin=1in]{geometry}
+
+% Theorem environments
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+% Commands for submission/camera-ready
+\newif\if@submission\@submissiontrue
+\DeclareOption{accepted}{\@submissionfalse}
+\ProcessOptions\relax
+
+% Title and author formatting
+\if@submission
+  \renewcommand{\author}[1]{\gdef\@author{Anonymous Authors}}
+\fi
+
+% Abstract environment
+\renewenvironment{abstract}%
+  {\small\quotation\noindent\textbf{Abstract}\par\medskip}%
+  {\endquotation}
+
+% Section numbering
+\setcounter{secnumdepth}{3}
+
+\endinput

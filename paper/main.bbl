@@ -1,0 +1,46 @@
+\begin{thebibliography}{1}
+
+\bibitem{agostinelli2014learning}
+Forest Agostinelli, Matthew Hoffman, Peter Sadowski, and Pierre Baldi.
+\newblock Learning activation functions to improve deep neural networks.
+\newblock {\em arXiv preprint arXiv:1412.6830}, 2014.
+
+\bibitem{glorot2011relu}
+Xavier Glorot, Antoine Bordes, and Yoshua Bengio.
+\newblock Deep sparse rectifier neural networks.
+\newblock {\em Proceedings of the fourteenth international conference on
+  artificial intelligence and statistics}, pages 315--323, 2011.
+
+\bibitem{he2016resnet}
+Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun.
+\newblock Deep residual learning for image recognition.
+\newblock In {\em Proceedings of the IEEE conference on computer vision and
+  pattern recognition}, pages 770--778, 2016.
+
+\bibitem{hendrycks2016gelu}
+Dan Hendrycks and Kevin Gimpel.
+\newblock Gaussian error linear units (gelus).
+\newblock {\em arXiv preprint arXiv:1606.08415}, 2016.
+
+\bibitem{krizhevsky2009cifar}
+Alex Krizhevsky, Geoffrey Hinton, et~al.
+\newblock Learning multiple layers of features from tiny images.
+\newblock 2009.
+
+\bibitem{nair2010relu}
+Vinod Nair and Geoffrey~E Hinton.
+\newblock Rectified linear units improve restricted boltzmann machines.
+\newblock In {\em Proceedings of the 27th international conference on machine
+  learning (ICML-10)}, pages 807--814, 2010.
+
+\bibitem{ramachandran2017swish}
+Prajit Ramachandran, Barret Zoph, and Quoc~V Le.
+\newblock Searching for activation functions.
+\newblock {\em arXiv preprint arXiv:1710.05941}, 2017.
+
+\bibitem{simonyan2014vgg}
+Karen Simonyan and Andrew Zisserman.
+\newblock Very deep convolutional networks for large-scale image recognition.
+\newblock In {\em International Conference on Learning Representations}, 2015.
+
+\end{thebibliography}

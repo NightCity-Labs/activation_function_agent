@@ -1,0 +1,110 @@
+FIGURE CAPTIONS FOR PAPER
+Generated: 2025-10-26
+Source: /Users/cstein/code/activation_function/figures/
+Output: /Users/cstein/code/activation_function_agent/paper/figures/
+
+================================================================================
+
+FIGURE 1: Theoretical Framework
+Filename: fig1.png
+Source: analytic_smoke.png
+Caption: Optimal activation function f(x) and class-wise correlations ρₖ for K=20 
+         Gaussian mixture (σ=1.0). Swish-like shape emerges with smooth transition 
+         at x=0.
+Section: Methods (2.1)
+Format: PNG
+
+================================================================================
+
+FIGURE 2: Two-Class Case
+Filename: fig2.png
+Source: analytic_2classes.png
+Caption: ReLU-like activation emerges for binary classification (K=2). Near-zero 
+         for negative inputs, linear for positive inputs.
+Section: Results (3.1)
+Format: PNG
+
+================================================================================
+
+FIGURE 3: Sigma Regime Comparison
+Filename: fig3.png
+Source: compare_sigs.png
+Caption: Optimal activations across different sigma regimes. Small σ: sharp and 
+         selective; mid σ: smooth swish; large σ: broad and linear.
+Section: Results (3.1)
+Format: PNG
+
+================================================================================
+
+FIGURE 4: Swish Fit Quality
+Filename: fig4.png
+Source: analytic_smoke_swish_fit_both.png
+Caption: Learned activation (blue) fitted to swish family (red). Excellent match 
+         with f(x) ≈ x·σ(2.5x) for mid-range σ.
+Section: Results (3.1)
+Format: PNG
+
+================================================================================
+
+FIGURE 5: Neural Network Activation Evolution (Multi-panel)
+Filenames: fig5_layer0.png, fig5_layer3.png, fig5_layer6.png, fig5_layer7.png
+Source: activations_4j06yful/activations_layer_0.png (and layers 3, 6, 7)
+Caption: Learned activation functions across layers in ResNet-10 after 20 epochs. 
+         All layers converge to swish-like shapes with layer-specific parameters.
+         Panel layout shows layers 0, 3, 6, 7 for comparison of early, mid, and 
+         late layer behavior.
+Section: Results (3.2)
+Format: PNG (4 separate files for multi-panel figure)
+Note: Create multi-panel figure showing progression from early to late layers.
+      Early layers (0-2): Broad, smooth swish (β ≈ 1.5)
+      Mid layers (3-6): Steeper slopes (β ≈ 2.5)
+      Late layers (7): Nearly ReLU-like (linear for positive, near-zero for negative)
+
+================================================================================
+
+FIGURE 6: Pre-Activation Histograms
+Filename: fig6.png
+Source: hists_layer_0_45eq1acn.png
+Caption: Per-class pre-activation distributions for ResNet-10 layer 0. Approximately 
+         Gaussian with separated means, validating theoretical assumptions.
+Section: Results (3.2)
+Format: PNG
+
+================================================================================
+
+FIGURE 7: Training Convergence
+Filename: fig7.png
+Source: analytic_smoke_fx_over_steps.png
+Caption: Evolution of f(x) during analytic training (100 steps). Rapid convergence 
+         to optimal swish-like shape.
+Section: Methods (2.2) or Results (3.1)
+Format: PNG
+
+================================================================================
+
+FIGURE 8: Rho Decomposition (Optional)
+Filename: fig8.png
+Source: analytic_smoke_rho_fit.png
+Caption: Correlation function ρ(x) fitted to exponential (negative) + linear 
+         (positive) model. Integrating ρ(x) yields f(x).
+Section: Results (3.3) or Appendix
+Format: PNG
+Note: This figure is marked as optional in the outline. Consider for appendix if 
+      main paper space is limited.
+
+================================================================================
+
+SUMMARY:
+- Total figures: 8 main figures (Figure 5 consists of 4 sub-panels)
+- Total files: 11 PNG files
+- All figures successfully copied from source
+- Format: PNG (LaTeX supports PNG, though PDF would be preferred for publication)
+- All source files are read-only and preserved in original location
+
+NEXT STEPS:
+1. Consider converting PNG to PDF for better LaTeX/publication quality
+2. Create multi-panel layout for Figure 5 (combine 4 layer images)
+3. Verify figure resolution and readability
+4. Update LaTeX main.tex to include figure references
+
+================================================================================

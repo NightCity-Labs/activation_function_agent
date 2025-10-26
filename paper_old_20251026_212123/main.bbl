@@ -1,0 +1,14 @@
+\begin{thebibliography}{1}
+
+\bibitem{hendrycks2016gaussian}
+Dan Hendrycks and Kevin Gimpel.
+\newblock Gaussian error linear units (gelus).
+\newblock {\em arXiv preprint arXiv:1606.08415}, 2016.
+
+\bibitem{ramachandran2017searching}
+Prajit Ramachandran, Barret Zoph, and Quoc~V Le.
+\newblock Searching for activation functions.
+\newblock In {\em Proceedings of the International Conference on Learning
+  Representations (ICLR)}, 2017.
+
+\end{thebibliography}

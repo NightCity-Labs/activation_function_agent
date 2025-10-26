@@ -1,0 +1,25 @@
+Figure Captions for ICML Paper
+
+Fig 1 (fig1.png): Motivation - Common activation functions (ReLU, Swish, GELU) used in neural networks
+Section: Introduction
+
+Fig 2 (fig2.png): Main result - Learned activation from 20-class Gaussian mixture showing Swish-like shape
+Section: Introduction
+
+Fig 3 (fig3.png): Correlation objective illustration showing class-wise correlations
+Section: Theory
+
+Fig 4 (fig4.png): Theoretical decomposition showing relationship between ρ(x) and f(x)
+Section: Theory
+
+Fig 5 (fig5_layer*.png): Layer-wise activations from neural network (composite of layers 0, 3, 6, 7)
+Section: Methods
+
+Fig 6 (fig6.png): Unit-level results composite: (a) 2-class ReLU-like, (b) 20-class Swish fit, (c) Sigma sweep
+Section: Results
+
+Fig 7 (fig7.png): Evolution of learned activations during training
+Section: Results
+
+Fig 8 (fig8.png): Layer-wise activation comparison across network depth
+Section: Results

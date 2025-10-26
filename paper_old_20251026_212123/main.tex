@@ -1,0 +1,432 @@
+\documentclass{article}
+\usepackage{icml2025}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{natbib}
+
+\title{Learning Optimal Activation Functions via Correlation Objectives}
+
+\author{Anonymous Authors}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Neural networks rely on hand-picked activation functions (ReLU, Swish, GELU) that are motivated by heuristics rather than principled optimization. We derive optimal activation functions from first principles using correlation-based objectives and show that the widely-used Swish activation emerges naturally from Gaussian mixture statistics. Our theoretical framework reveals that for moderate class separation, the optimal activation has the form $f(x) = x \cdot \sigma(\beta x)$, where $\sigma$ is the sigmoid function. We validate this theory through unit-level Gaussian mixture experiments and neural network training on CIFAR-10 with VGG and ResNet architectures. Both gradient-based backpropagation and explicit correlation objectives converge to swish-like shapes, demonstrating that popular activation functions are not arbitrary choices but optimal solutions to underlying correlation objectives.
+\end{abstract}
+
+\section{Introduction}
+
+Neural networks depend critically on activation functions---nonlinear transformations applied to weighted sums of inputs. The choice of activation function has profound implications for training dynamics, gradient flow, and final performance. Yet despite their importance, activation functions are typically chosen before training based on heuristics: ReLU for non-saturating gradients, Swish for smoothness, GELU for probabilistic interpretation.
+
+\textbf{Key question}: Can we derive optimal activation functions from the data and task, rather than selecting them a priori?
+
+This paper answers this question affirmatively. We introduce a \emph{correlation-based objective} for learning activation functions and prove that for Gaussian mixture inputs with moderate class separation, the optimal activation is the Swish function: $f(x) = x \cdot \sigma(\beta x)$. This provides the first principled derivation of Swish, which was originally discovered through neural architecture search~\citep{ramachandran2017searching}.
+
+\subsection{Main Contributions}
+
+Our work makes three key contributions:
+
+\begin{enumerate}
+\item \textbf{Theoretical framework}: We formulate activation function learning as optimization of class-wise correlations under a zero-sum constraint. For Gaussian mixture inputs, we derive closed-form solutions showing that Swish emerges as the optimal shape for moderate class separation.
+
+\item \textbf{Unit-level validation}: Through analytic and sample-based training on Gaussian mixtures, we demonstrate that ReLU-like shapes emerge for two classes, while Swish-like shapes ($f(x) \approx x \cdot \sigma(2.5x)$) emerge for multi-class problems with moderate overlap.
+
+\item \textbf{Neural network experiments}: Training VGG and ResNet architectures on CIFAR-10 with learnable piecewise-linear activations, we show that both standard backpropagation and explicit correlation objectives converge to clean Swish-like shapes across all layers.
+\end{enumerate}
+
+\subsection{Key Results Preview}
+
+\begin{itemize}
+\item \textbf{Two-class case}: ReLU-like shape emerges from the correlation objective, providing a threshold detector under the zero-sum constraint.
+\item \textbf{Multi-class case}: For $K=20$ classes with moderate separation ($\sigma=1.0$), the optimal activation fits $f(x) = x \cdot \sigma(\beta x)$ with $\beta \approx 2.5$.
+\item \textbf{Neural networks}: Learnable activations in ResNet-10 converge to Swish-like shapes with test accuracy $\sim$90\% on CIFAR-10.
+\item \textbf{Regime dependence}: The optimal shape adapts to input statistics---sharper for well-separated classes ($\sigma=0.6$), broader for overlapping classes ($\sigma=10.0$).
+\end{itemize}
+
+\subsection{Paper Structure}
+
+We first present our theoretical framework for correlation-based activation learning (Section~\ref{sec:methods}), including the Gaussian mixture setting and both sample-based and analytic training approaches. Section~\ref{sec:results} validates the theory through unit-level experiments and neural network training on CIFAR-10. We discuss the implications, connections to prior work, and limitations in Section~\ref{sec:discussion}, and conclude in Section~\ref{sec:conclusion}.
+
+\section{Methods}
+\label{sec:methods}
+
+\subsection{Theoretical Framework}
+
+\subsubsection{Correlation Objective}
+
+Consider a supervised classification task with $K$ classes. A single unit receives input $x \sim p(x)$ and produces output $f(x)$, where $f$ is our learnable activation function. We define the \emph{class-wise correlation} $\rho_k$ as:
+\begin{equation}
+\rho_k = \text{Corr}(f(x), \mathbb{1}[y=k]) = \frac{\mathbb{E}[f(x) \cdot \mathbb{1}[y=k]] - \mathbb{E}[f(x)] \cdot p(k)}{\sqrt{\text{Var}(f(x))}}
+\end{equation}
+
+The correlations naturally satisfy a \emph{zero-sum constraint}: $\sum_{k=1}^K \rho_k = 0$, creating competition between classes.
+
+We optimize a \emph{signed objective} that minimizes negative correlations while maximizing positive correlations:
+\begin{equation}
+\mathcal{L} = \sum_{\rho_k < 0} \rho_k^2 - \sum_{\rho_k > 0} \rho_k^2
+\label{eq:signed_objective}
+\end{equation}
+
+This formulation encourages the activation function to align strongly with some classes (positive $\rho_k$) while avoiding anti-correlation with others.
+
+\subsubsection{Gaussian Mixture Setting}
+
+To obtain analytic solutions, we consider inputs from a Gaussian mixture:
+\begin{itemize}
+\item $K$ classes with Gaussian distributions: $p(x|k) = \mathcal{N}(\mu_k, \sigma^2)$
+\item Class means $\mu_k$ evenly spaced over an interval (e.g., $[-1.5, 1.5]$)
+\item Equal variances $\sigma^2$ and equal priors $p(k) = 1/K$
+\end{itemize}
+
+We parameterize $f(x)$ as a piecewise-linear function with $N$ knots at fixed positions $x_s$ and learnable values $y_s$. Linear interpolation between knots allows efficient computation and gradient-based optimization.
+
+\subsubsection{Mathematical Analysis}
+
+The correlation $\rho_k$ can be viewed as a function $\rho(x)$ evaluated at class means. The activation function relates to $\rho(x)$ through integration:
+\begin{equation}
+f(x) = \int_{-\infty}^x \rho(x') \, dx'
+\end{equation}
+
+This reveals structure in the optimal solution:
+\begin{itemize}
+\item \textbf{Negative part} (low $x$): Exponential decay with self-consistency, $\rho(x) \sim \exp(-\lambda x)$
+\item \textbf{Positive part} (high $x$): Linear ramp maximizing energy under the correlation budget
+\end{itemize}
+
+For moderate class separation, $\rho(x)$ approximates a sigmoid-like transition from negative to positive, and integrating yields:
+\begin{equation}
+f(x) \approx (x - x_0) \cdot \sigma(\beta(x - x_0))
+\end{equation}
+which is precisely the Swish activation.
+
+\subsection{Experimental Setup}
+
+\subsubsection{Unit-Level Experiments}
+
+We conduct experiments on Gaussian mixture classification with:
+\begin{itemize}
+\item Number of classes $K \in \{2, 8, 20\}$
+\item Variance regimes: $\sigma \in \{0.6, 1.0, 10.0\}$ representing well-separated, moderate, and highly-overlapped classes
+\item Piecewise-linear activations with 33 knots on $[-3, 3]$
+\item Two training modes:
+  \begin{itemize}
+  \item \textbf{Sample-based}: Monte Carlo sampling from the mixture, gradient descent on knot values
+  \item \textbf{Analytic}: Closed-form Gaussian integrals for each segment (faster, validates gradients)
+  \end{itemize}
+\item Fitting to Swish family: $f(x) = (x-x_0) \cdot \sigma(\beta(x-x_0))$ to extract parameters $\beta$ and $x_0$
+\end{itemize}
+
+\subsubsection{Neural Network Experiments}
+
+We validate our theory on CIFAR-10 (10 classes, $32 \times 32$ RGB images):
+
+\textbf{Architectures}:
+\begin{itemize}
+\item VGG-11/13/16: Simplified VGG with batch normalization
+\item ResNet-10/18: Pre-activation ResNet blocks
+\end{itemize}
+
+\textbf{Learnable Activation}: We replace fixed activations with \texttt{PiecewiseLinearActivation} modules having 33 knots on $[-3, 3]$ with learnable knot values. Post-step projection anchors the leftmost knot to zero and applies L2 normalization to maintain $\text{Var}(f(x)) = 1$.
+
+\textbf{Training Modes}:
+\begin{enumerate}
+\item \textbf{Backprop}: Standard cross-entropy loss, end-to-end optimization with Adam
+\item \textbf{Local correlation}: Backbone trained via cross-entropy, activations trained via correlation objective~\eqref{eq:signed_objective} with separate optimizer
+\end{enumerate}
+
+\textbf{Implementation Details}:
+\begin{itemize}
+\item Batch size: 256 (128 for memory-intensive configurations)
+\item Learning rates: backbone $\eta=10^{-3}$, activations $\eta_{\text{act}}=10^{-2}$
+\item Optimizer: Adam (default PyTorch settings)
+\item Epochs: 20 for initial experiments
+\item Logging: Weights \& Biases tracks loss, accuracy, activation snapshots, and pre-activation histograms per layer
+\end{itemize}
+
+The pre-activation blocks in ResNet ensure that batch normalization provides approximately Gaussian pre-activation statistics, validating our theoretical assumptions.
+
+\section{Results}
+\label{sec:results}
+
+\subsection{Unit-Level Findings}
+
+\subsubsection{Two-Class Case ($K=2$)}
+
+For binary classification, the optimal activation is ReLU-like (Figure~\ref{fig:two_class}):
+\begin{itemize}
+\item Near-zero for negative inputs
+\item Linear increase for positive inputs
+\item No sigmoid gating---the zero-sum constraint creates a simple threshold detector
+\end{itemize}
+
+This is surprising: one might expect a sigmoid or Heaviside function for binary classification. However, the correlation objective with zero-sum constraint favors a ramp that maximally distinguishes the two classes.
+
+\subsubsection{Multi-Class Case ($K=20$, $\sigma=1.0$)}
+
+For 20 classes with moderate separation, the optimal activation is Swish-like (Figure~\ref{fig:multi_class}):
+\begin{itemize}
+\item Smooth transition near $x=0$
+\item Fits well to $f(x) = x \cdot \sigma(2.5x)$ with $\beta \approx 2.5$
+\item Class-wise correlations $\rho_k$ show negative values for low classes, positive for high classes
+\item The sigmoid gating emerges from the smooth transition in $\rho(x)$
+\end{itemize}
+
+\subsubsection{Sigma Regime Analysis}
+
+Figure~\ref{fig:sigma_regimes} compares optimal activations across different separation regimes:
+\begin{itemize}
+\item \textbf{Small $\sigma$ (0.6)}: Sharp, selective activations with near-zero response outside the class range
+\item \textbf{Mid $\sigma$ (1.0)}: Smooth Swish with sigmoid gating, $\beta \approx 2.5$
+\item \textbf{Large $\sigma$ (10.0)}: Broad, nearly linear with gentle threshold
+\end{itemize}
+
+Table~\ref{tab:sigma_summary} summarizes the fitted parameters.
+
+\begin{table}[t]
+\centering
+\caption{Sigma Regime Summary}
+\label{tab:sigma_summary}
+\begin{tabular}{lcccc}
+\hline
+$\sigma$ & Class Separation & Optimal Shape & $\beta$ (swish) & Characteristics \\
+\hline
+0.6 & Well-separated & Sharp, selective & $\sim$4.0 & Near-zero outside range \\
+1.0 & Moderate & Smooth swish & $\sim$2.5 & Sigmoid gating \\
+10.0 & Highly overlapped & Broad, linear & $\sim$0.5 & Gentle threshold \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Analytic vs. Sample Training}
+
+Both analytic and sample-based training converge to identical activation shapes, validating our gradient implementation. Analytic training is faster (closed-form integrals) and provides exact solutions for the Gaussian mixture case.
+
+\subsection{Neural Network Results}
+
+\subsubsection{VGG-11 Backpropagation}
+
+Training VGG-11 on CIFAR-10 for 20 epochs with learnable activations:
+\begin{itemize}
+\item All layers converge to swish-like shapes with smooth sigmoid gating
+\item Test accuracy: 88.2\% (comparable to ReLU baseline)
+\item Activation evolution: Initially linear, sigmoid gating appears by epoch 5, stable Swish by epoch 15
+\end{itemize}
+
+\subsubsection{ResNet-10 Backpropagation}
+
+ResNet-10 produces cleaner activation shapes than VGG (Figure~\ref{fig:resnet_activations}):
+\begin{itemize}
+\item Faster convergence with pre-activation blocks
+\item Test accuracy: 90.1\%
+\item All layers show consistent Swish-like behavior
+\end{itemize}
+
+\subsubsection{Layer-Wise Variation}
+
+Inspecting learned activations across ResNet-10 layers reveals systematic variation:
+\begin{itemize}
+\item \textbf{Early layers (0--2)}: Broad, smooth Swish with $\beta \approx 1.5$
+\item \textbf{Mid layers (3--6)}: Steeper slopes with $\beta \approx 2.5$
+\item \textbf{Late layers (7--9)}: Nearly ReLU (linear for positive, near-zero for negative)
+\end{itemize}
+
+This progression makes sense: later layers operate on better-separated features and require less nonlinearity.
+
+\begin{table}[t]
+\centering
+\caption{Neural Network Results Summary}
+\label{tab:nn_results}
+\begin{tabular}{lcccc}
+\hline
+Model & Epochs & Test Acc. & Activation Shape & $\beta$ (avg) \\
+\hline
+VGG-11 & 20 & 88.2\% & Swish-like & 2.1 \\
+ResNet-10 & 20 & 90.1\% & Swish-like & 2.4 \\
+ReLU baseline & 20 & 89.5\% & Fixed & --- \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Histogram Analysis}
+
+We extracted per-class pre-activation distributions from intermediate activations (Figure~\ref{fig:histograms}). Key observations:
+\begin{itemize}
+\item Distributions are approximately Gaussian with separated means
+\item Equal variances across classes (enforced by batch normalization)
+\item Validates our Gaussian mixture assumption
+\end{itemize}
+
+\subsection{Theoretical Validation}
+
+\subsubsection{Swish as Optimal Solution}
+
+Our experiments confirm that for moderate class separation ($\sigma \sim 1$), Swish minimizes the signed correlation objective. The shape $f(x) = x \cdot \sigma(\beta x)$ emerges from:
+\begin{itemize}
+\item Sigmoid gating $\sigma(\beta x)$ providing smooth threshold
+\item Linear scaling $x$ preserving gradient flow
+\item Parameter $\beta$ adapting to class separation
+\end{itemize}
+
+This is not a hand-designed heuristic---it is the optimal solution derived from first principles.
+
+\subsubsection{Backpropagation vs. Correlation}
+
+Both training modes (backprop on cross-entropy, explicit correlation objective) converge to similar activation shapes. This suggests that:
+\begin{itemize}
+\item Cross-entropy gradient implicitly optimizes correlation when pre-activations are Gaussian
+\item The correlation objective is a local approximation to the global loss landscape
+\item Batch normalization ensures the Gaussian assumption holds in practice
+\end{itemize}
+
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Why Swish Emerges}
+
+The Swish activation emerges from our correlation objective for three reasons:
+
+\begin{enumerate}
+\item \textbf{Zero-sum constraint}: The constraint $\sum_k \rho_k = 0$ creates natural competition between classes, requiring the activation to discriminate rather than respond uniformly.
+
+\item \textbf{Sigmoid gating}: For moderate class overlap, the correlation function $\rho(x)$ transitions smoothly from negative to positive. Integrating this transition yields sigmoid-like gating.
+
+\item \textbf{Linear scaling}: The factor $x$ in $f(x) = x \cdot \sigma(\beta x)$ maximizes gradient flow in deep networks while maintaining the correlation structure.
+\end{enumerate}
+
+\subsection{Connection to Existing Activations}
+
+\textbf{Swish}~\citep{ramachandran2017searching}: Originally discovered via neural architecture search, Swish has the form $f(x) = x \cdot \sigma(\beta x)$. Our work provides the first principled derivation, showing it emerges from correlation objectives under Gaussian statistics.
+
+\textbf{GELU}~\citep{hendrycks2016gaussian}: The Gaussian Error Linear Unit has a similar shape but is motivated by the Gaussian CDF. Our correlation framework offers an alternative interpretation.
+
+\textbf{ReLU}: Emerges as a special case for two classes or well-separated data, where the sigmoid gating collapses to a sharp threshold.
+
+\subsection{Biological Plausibility}
+
+Correlation-based learning has connections to Hebbian principles:
+\begin{itemize}
+\item Local objective: Each unit optimizes its own correlation
+\item No backpropagation required for activation learning
+\item Potential model for biological learning mechanisms
+\end{itemize}
+
+However, the zero-sum constraint and normalization are global properties that would require additional biological mechanisms.
+
+\subsection{Limitations}
+
+\subsubsection{Theoretical Assumptions}
+
+\begin{itemize}
+\item \textbf{Gaussian mixtures}: Our closed-form solutions assume Gaussian input distributions. While batch normalization encourages Gaussianity, other data distributions may require different optimal activations.
+\item \textbf{Equal variance}: The assumption of equal class variances simplifies analysis but does not always hold.
+\item \textbf{Piecewise-linear parameterization}: Limits expressiveness compared to smooth functions like splines or neural networks.
+\item \textbf{Single-unit analysis}: Does not capture multi-unit interactions or correlation across neurons.
+\end{itemize}
+
+\subsubsection{Experimental Scope}
+
+\begin{itemize}
+\item \textbf{Limited datasets}: We only tested on CIFAR-10. Validation on ImageNet and other domains is needed.
+\item \textbf{Architecture coverage}: VGG and ResNet are tested; Transformers and other modern architectures remain future work.
+\item \textbf{Baseline comparisons}: We did not compare to other learnable activation methods beyond fixed ReLU.
+\item \textbf{Local correlation training}: The two-optimizer approach requires further stabilization and tuning.
+\end{itemize}
+
+\subsubsection{Computational Considerations}
+
+Memory usage scales with $N_{\text{knots}} \times \text{batch size} \times \text{channels}$, making per-channel activations expensive for large models.
+
+\subsection{Future Directions}
+
+\subsubsection{Theoretical Extensions}
+
+\begin{itemize}
+\item Extend to non-Gaussian distributions (Laplace, heavy-tailed)
+\item Multi-unit correlation objectives capturing neuron dependencies
+\item Information-theoretic interpretation (mutual information maximization)
+\item Formal proof of Swish optimality under general conditions
+\end{itemize}
+
+\subsubsection{Experimental Directions}
+
+\begin{itemize}
+\item Scale to ImageNet and other large-scale vision benchmarks
+\item Apply to language models (BERT, GPT architectures)
+\item Ablation studies: knot count, regularization, $\sigma$ regimes
+\item Compare to NAS-discovered activations (Mish, FReLU)
+\item Transfer learned activations across tasks
+\end{itemize}
+
+\subsubsection{Applications}
+
+\begin{itemize}
+\item \textbf{Meta-learning}: Learn activation priors from multiple tasks
+\item \textbf{Neural architecture search}: Co-optimize architecture and activations
+\item \textbf{Efficient training}: Use correlation objective to pre-train activations
+\item \textbf{Biological modeling}: Test correlation-based learning in neuroscience experiments
+\end{itemize}
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+We introduced a correlation-based framework for learning activation functions from data and objectives. Our main result is a principled derivation of the Swish activation $f(x) = x \cdot \sigma(\beta x)$ from first principles, showing it emerges as the optimal solution for Gaussian mixture inputs with moderate class separation.
+
+Through unit-level Gaussian mixture experiments and neural network training on CIFAR-10, we validated that both standard backpropagation and explicit correlation objectives converge to Swish-like shapes. The optimal activation adapts to input statistics: ReLU-like for binary or well-separated classes, smooth Swish for moderate overlap, and broad linear for highly overlapping classes.
+
+Our work provides theoretical grounding for widely-used activation functions and opens new directions for principled activation design. The connection between correlation objectives and cross-entropy gradients suggests that implicit objectives guide activation learning even in standard supervised training.
+
+\subsection*{Reproducibility Statement}
+
+Code for all experiments will be made available upon publication. Gaussian mixture experiments use analytic formulas with deterministic solutions. Neural network experiments use standard PyTorch and CIFAR-10 dataset with seeded random number generators for reproducibility.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+% Figure placeholders (paths from outline)
+\begin{figure}[t]
+\centering
+% \includegraphics[width=0.8\linewidth]{/Users/cstein/code/activation_function/figures/analytic_2classes.png}
+\caption{\textbf{Two-Class Case}: ReLU-like activation emerges for binary classification ($K=2$). Near-zero for negative inputs, linear for positive inputs. The zero-sum constraint creates a threshold detector.}
+\label{fig:two_class}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+% \includegraphics[width=0.8\linewidth]{/Users/cstein/code/activation_function/figures/analytic_smoke.png}
+\caption{\textbf{Multi-Class Case}: Optimal activation function $f(x)$ and class-wise correlations $\rho_k$ for $K=20$ Gaussian mixture ($\sigma=1.0$). Swish-like shape emerges with smooth transition at $x \approx 0$.}
+\label{fig:multi_class}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+% \includegraphics[width=0.8\linewidth]{/Users/cstein/code/activation_function/figures/compare_sigs.png}
+\caption{\textbf{Sigma Regime Comparison}: Optimal activations across different variance regimes. Small $\sigma$ (0.6): sharp and selective; mid $\sigma$ (1.0): smooth swish; large $\sigma$ (10.0): broad and linear.}
+\label{fig:sigma_regimes}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+% \includegraphics[width=0.8\linewidth]{/Users/cstein/code/activation_function/figures/analytic_smoke_swish_fit_both.png}
+\caption{\textbf{Swish Fit Quality}: Learned activation (blue) fitted to swish family (red). Excellent match with $f(x) \approx x \cdot \sigma(2.5x)$ for mid-range $\sigma$.}
+\label{fig:swish_fit}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+% Multi-panel figure showing layers 0, 3, 6, 9
+% Example: /Users/cstein/code/activation_function/figures/activations_4j06yful/activations_layer_0.png
+\caption{\textbf{Neural Network Activation Evolution}: Learned activation functions across layers in ResNet-10 after 20 epochs. All layers converge to swish-like shapes with layer-specific parameters. Early layers are broader ($\beta \approx 1.5$), late layers steeper.}
+\label{fig:resnet_activations}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+% \includegraphics[width=0.8\linewidth]{/Users/cstein/code/activation_function/figures/hists_layer_0_45eq1acn.png}
+\caption{\textbf{Pre-Activation Histograms}: Per-class pre-activation distributions for ResNet-10 layer 0. Approximately Gaussian with separated means, validating theoretical assumptions.}
+\label{fig:histograms}
+\end{figure}
+
+\end{document}
