@@ -151,18 +151,27 @@ for section in $SECTIONS; do
         fi
         
         # Extract current section text
-        SECTION_TEXT=$(extract_section "$section" "$OUTPUT_DRAFT")
+        TEMP_SECTION="/tmp/improve_${section}_${dimension}_section.tex"
+        extract_section "$section" "$OUTPUT_DRAFT" > "$TEMP_SECTION"
         
         # Create temp files for this iteration
         TEMP_PROMPT="/tmp/improve_${section}_${dimension}_prompt.md"
         TEMP_OUTPUT="/tmp/improve_${section}_${dimension}_output.txt"
         
-        # Prepare prompt with substitutions
+        # Prepare prompt with substitutions (except SECTION_TEXT which we'll append)
         cat "$PROMPT_FILE" | \
             sed "s|{SECTION_NAME}|$section|g" | \
             sed "s|{KB_PATH}|$(jq -r '.paths.kb_path' "$CONFIG_FILE")|g" | \
             sed "s|{CODE_PATH}|$(jq -r '.paths.code_path' "$CONFIG_FILE")|g" | \
-            sed "s|{SECTION_TEXT}|$SECTION_TEXT|g" > "$TEMP_PROMPT"
+            sed "s|{SECTION_TEXT}|SEE_SECTION_BELOW|g" > "$TEMP_PROMPT"
+        
+        # Append section text
+        echo "" >> "$TEMP_PROMPT"
+        echo "## Current Section Text" >> "$TEMP_PROMPT"
+        echo "" >> "$TEMP_PROMPT"
+        echo '```latex' >> "$TEMP_PROMPT"
+        cat "$TEMP_SECTION" >> "$TEMP_PROMPT"
+        echo '```' >> "$TEMP_PROMPT"
         
         # Call cursor-agent for improvement
         log "EXECUTE" "Running cursor-agent for $section/$dimension"
@@ -194,7 +203,7 @@ for section in $SECTIONS; do
         fi
         
         # Cleanup
-        rm -f "$TEMP_PROMPT" "$TEMP_OUTPUT"
+        rm -f "$TEMP_PROMPT" "$TEMP_OUTPUT" "$TEMP_SECTION"
         
         # Test compilation after each improvement
         log "CHECK" "Testing LaTeX compilation"
