@@ -14,11 +14,13 @@ cd /Users/cstein/code/activation_function_agent
 ```
 
 This will:
-1. Create paper outline from KB
-2. Generate LaTeX manuscript
-3. Prepare figures
-4. Compile PDF
-5. **Automatically backup to GCS**
+1. **Create new git branch** (`run/{run_id}`)
+2. Create paper outline from KB
+3. Generate LaTeX manuscript
+4. Prepare figures
+5. Compile PDF
+6. **Commit results to branch**
+7. **Automatically backup to GCS**
 
 ### Check Results
 
@@ -56,6 +58,50 @@ cat logs/paper_adaptive_*/orchestrator.log
 │       └── step_*.jsonl
 ├── paper_old_*/                       # Previous versions
 └── README.md                          # This file
+```
+
+---
+
+## Git Workflow
+
+### Automatic Branching
+
+Each run creates a new branch: `run/{run_id}`
+
+**Example**: `run/paper_adaptive_20251026_212124`
+
+### Automatic Commits
+
+At the end of each run, results are committed:
+- Paper outputs (`paper/`)
+- Run logs (`logs/{run_id}/`)
+- Commit message includes status and file sizes
+
+### Merging Results
+
+```bash
+# View changes
+git diff main..run/paper_adaptive_20251026_212124
+
+# Merge successful run
+git checkout main
+git merge run/paper_adaptive_20251026_212124
+
+# Delete branch after merge
+git branch -d run/paper_adaptive_20251026_212124
+```
+
+### Comparing Runs
+
+```bash
+# Compare two runs
+git diff run/paper_pipeline_20251026_205654..run/paper_adaptive_20251026_212124
+
+# See what changed in paper
+git diff run/paper_pipeline_20251026_205654..run/paper_adaptive_20251026_212124 -- paper/
+
+# View commit history
+git log --oneline --graph --all
 ```
 
 ---

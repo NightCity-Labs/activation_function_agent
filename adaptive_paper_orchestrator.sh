@@ -17,6 +17,12 @@ WORKFLOWS="/Users/cstein/vaults/projects/agents/workflows"
 mkdir -p "$LOG_DIR"
 mkdir -p "$PAPER_DIR"
 
+# Git: Create new branch for this run
+cd "$BASE_DIR"
+BRANCH_NAME="run/${RUN_ID}"
+git checkout -b "$BRANCH_NAME" 2>/dev/null || git checkout "$BRANCH_NAME"
+echo "Git branch: $BRANCH_NAME"
+
 echo "=== Adaptive Paper Pipeline Orchestrator ==="
 echo "Run ID: $RUN_ID"
 echo "Logs: $LOG_DIR"
@@ -125,6 +131,30 @@ else
   echo "$LOG_DIR/orchestrator.log"
 fi
 
+# Git: Commit results
+echo ""
+echo "=== Committing to Git ==="
+cd "$BASE_DIR"
+git add paper/ 2>/dev/null || true
+git add logs/"$RUN_ID"/ 2>/dev/null || true
+
+if [ -f "$PAPER_DIR/main.pdf" ]; then
+  COMMIT_MSG="✅ $RUN_ID: Successful paper generation
+
+- PDF: $(ls -lh "$PAPER_DIR/main.pdf" | awk '{print $5}')
+- Logs: logs/$RUN_ID/
+- Branch: $BRANCH_NAME"
+else
+  COMMIT_MSG="❌ $RUN_ID: Pipeline failed
+
+- No PDF generated
+- Logs: logs/$RUN_ID/
+- Branch: $BRANCH_NAME"
+fi
+
+git commit -m "$COMMIT_MSG" 2>&1 | grep -E "files changed|insertions|deletions|create mode" || echo "No changes to commit"
+echo "Committed to branch: $BRANCH_NAME"
+
 # Backup to GCS
 echo ""
 echo "=== Backing up to GCS ==="
@@ -134,4 +164,10 @@ if [ -f "$BASE_DIR/backup_agent_runs.sh" ]; then
 else
   echo "⚠️  Backup script not found: $BASE_DIR/backup_agent_runs.sh"
 fi
+
+echo ""
+echo "=== Run Complete ==="
+echo "Branch: $BRANCH_NAME"
+echo "To merge: git checkout main && git merge $BRANCH_NAME"
+echo "To compare: git diff main..$BRANCH_NAME"
 
