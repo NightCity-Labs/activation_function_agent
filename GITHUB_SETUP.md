@@ -3,12 +3,14 @@
 ## Create GitHub Repository
 
 ```bash
-# On GitHub, create new repo: activation_function_agent
-# Don't initialize with README (we already have one)
-
-# Add remote
+# Create repo using gh CLI
 cd /Users/cstein/code/activation_function_agent
-git remote add origin git@github.com:YOUR_USERNAME/activation_function_agent.git
+gh repo create activation_function_agent --public --source=.
+
+# Configure git to use gh auth token (REQUIRED for NightCity-Labs org)
+git config user.name "NightCity-Labs"
+git config user.email "carlos.stein@nightcitylabs.ai"
+git remote set-url origin https://$(gh auth token)@github.com/NightCity-Labs/activation_function_agent.git
 
 # Push main branch
 git push -u origin main
@@ -16,6 +18,8 @@ git push -u origin main
 # Push all run branches
 git push --all origin
 ```
+
+**Note**: Using HTTPS with gh token in URL is required when SSH key is under different account (cstein06) than the org (NightCity-Labs).
 
 ## Workflow with GitHub
 
