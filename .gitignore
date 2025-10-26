@@ -1,46 +1,36 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-env/
-venv/
-ENV/
-build/
-dist/
-*.egg-info/
+# Logs (backed up to GCS, don't commit)
+logs/*/
+*.log
+backup.log
 
-# Database
+# Temporary LaTeX files
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out
+paper/*.toc
+paper/*.synctex.gz
+
+# Old paper versions (backed up to GCS)
+paper_old_*/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# SQLite databases
+*.db
 *.db-journal
 
-# Logs
-*.log
-
-# Outputs
-outputs/
-experiments/*/runs/
-experiments/*/checkpoints/
-
-# Wandb
-wandb/
-
-# Conda
-.conda/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
+# OS files
 .DS_Store
 Thumbs.db
 
-# Secrets
-.env
-*.key
-*.pem
-
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
